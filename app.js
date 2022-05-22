@@ -10,6 +10,8 @@ var ipfsAPI = require('ipfs-api');
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+var mime = require('mime-types');
+
 app.use(cors({ origin: '*' }));
 
 const ipfs = ipfsAPI('/ip4/127.0.0.1/tcp/5001'); //http => POST: SEND TO DATA IN THE REQUEST , GET =>FETCH TO DATA USED REQUEST,DELETE:,PUT update
@@ -23,7 +25,10 @@ app.get('/', async function (req, res) {
 app.get('/getfiles', async function (req, res) {
     const allFile = await prisma.files.findMany();
 
-    res.json(allFile);
+    const dataF = allFile.map((data) => {
+        return { ...data, mimetype: mime.extension(data.mimetype) };
+    });
+    res.json(dataF);
 });
 app.post('/profile', upload.single('avatar'), function (req, res, next) {
     // req.file is the `avatar` file
@@ -62,11 +67,13 @@ app.post('/upload', upload.single('file'), async function (req, res) {
                 console.log(err);
                 return;
             }
+            console.log(req.body.password);
 
             await prisma.files.create({
                 data: {
                     hash: file[0].hash,
                     name: '',
+                    password: req?.body?.password ?? null,
                     fileName: req.file.originalname,
                     mimetype: req.file.mimetype,
                     size: file[0].size,

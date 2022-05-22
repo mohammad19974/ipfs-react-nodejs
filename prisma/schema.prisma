@@ -17,6 +17,7 @@ model files {
   fileName  String
   mimetype  String
   size      Int
+  password  String?
   createdAt DateTime? @default(now())
 
 }

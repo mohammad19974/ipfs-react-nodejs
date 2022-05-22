@@ -7,7 +7,7 @@ git clone https://github.com/rohithseetha/ipfs_file_upload.git
 npm install
 
 node app.js
- download file ipfs app
+ download file ipfs app   
 
  cd file-browser ;npm start for run front end app
  

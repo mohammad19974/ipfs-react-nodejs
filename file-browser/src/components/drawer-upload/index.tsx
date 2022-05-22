@@ -7,7 +7,10 @@ import {
     DrawerFooter,
     DrawerHeader,
     DrawerOverlay,
+    FormControl,
+    FormLabel,
     Input,
+    Switch,
     useDisclosure,
     useToast,
 } from '@chakra-ui/react';
@@ -18,6 +21,8 @@ import { useMutation } from 'react-query';
 
 export function DrawerUpload({ refetch }: any) {
     const { isOpen, onOpen, onClose } = useDisclosure();
+    const [password, setPassword] = useState('');
+    const [isPassword, setIsPassword] = useState(false);
     const btnRef = React.useRef<any>();
     const toast = useToast();
     const [file, setFile] = useState<any>(undefined);
@@ -39,6 +44,7 @@ export function DrawerUpload({ refetch }: any) {
                     isClosable: true,
                 });
                 refetch();
+                setIsPassword(false);
                 onClose();
             },
             onError: () => {
@@ -53,13 +59,22 @@ export function DrawerUpload({ refetch }: any) {
         },
     );
     const onSubmit = () => {
+        if (isPassword) {
+            if (password === '') {
+                alert('enter password or press disable password');
+                return;
+            }
+        }
         if (file !== undefined) {
             // Create an object of formData
             // // const formData = new FormData();
             // console.log(file[0]);
             // Update the formData object
             // formData.append('file', file[0]);
-            mutate({ file: file[0] });
+            mutate({
+                file: file[0],
+                password: isPassword ? password : undefined,
+            });
         } else {
             alert('Please choose file');
         }
@@ -91,6 +106,34 @@ export function DrawerUpload({ refetch }: any) {
                             onChange={(e) => setFile(e.target?.files!)}
                             type="file"
                         ></Input>
+                        <FormControl
+                            mt="8px"
+                            display="flex"
+                            alignItems="center"
+                        >
+                            <FormLabel htmlFor="email-alerts" mb="0">
+                                Enable password
+                            </FormLabel>
+                            <Switch
+                                isChecked={isPassword}
+                                onChange={(e) => {
+                                    setIsPassword(e.target.checked as any);
+                                    setPassword('');
+                                }}
+                                id="email-alerts"
+                            />
+                        </FormControl>
+                        {isPassword && (
+                            <Input
+                                mt="4px"
+                                value={password}
+                                type="password"
+                                placeholder="Password"
+                                onChange={(e) => setPassword(e.target.value)}
+                                isRequired={true}
+                                required
+                            ></Input>
+                        )}
                     </DrawerBody>
 
                     <DrawerFooter>

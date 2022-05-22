@@ -4,4 +4,5 @@ export interface CardFileProps {
     name: string;
     size: number;
     mimetype: string;
+    password: null | string;
 }

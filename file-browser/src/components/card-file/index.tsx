@@ -5,6 +5,7 @@ import {
     ButtonGroup,
     Code,
     Image,
+    Input,
     Link,
 } from '@chakra-ui/react';
 import { useCallback, useState } from 'react';
@@ -14,11 +15,13 @@ import { LinkIcon, ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 export const CardFile: React.FC<CardFileProps> = ({
     fileName,
     hash,
+    password,
     name,
     size,
     mimetype,
 }) => {
     const [isViewHash, setIsViewHash] = useState(false);
+    const [passwordText, setPasswordText] = useState('');
     const handleViewHash = useCallback(() => {
         setIsViewHash(!isViewHash);
     }, [isViewHash]);
@@ -66,7 +69,6 @@ export const CardFile: React.FC<CardFileProps> = ({
                         {(size / 1024).toFixed(2)} kB &bull;
                     </Box>
                 </Box>
-
                 <Box
                     title={fileName}
                     mt="1"
@@ -75,48 +77,67 @@ export const CardFile: React.FC<CardFileProps> = ({
                     lineHeight="tight"
                     noOfLines={1}
                 >
+                    {' '}
                     FileName:{' '}
-                    <Link
-                        textColor={'blue.700'}
-                        href={`http://127.0.0.1:8080/ipfs/${hash}`}
-                        target="_blank"
-                    >
-                        {fileName}{' '}
-                    </Link>
+                    {password === null || password === passwordText ? (
+                        <Link
+                            textColor={'blue.700'}
+                            href={`http://127.0.0.1:8080/ipfs/${hash}`}
+                            target="_blank"
+                        >
+                            {fileName}{' '}
+                        </Link>
+                    ) : (
+                        fileName
+                    )}
                 </Box>
-
                 {/* <Box>
                     Name: {name}
                     <Box as="span" color="gray.600" fontSize="sm"></Box>
                 </Box> */}
-
                 <Box display="flex" mt="2" alignItems="center">
-                    <ButtonGroup variant="outline" spacing="2">
-                        <Button
-                            leftIcon={
-                                !isViewHash ? (
-                                    <ViewIcon />
-                                ) : (
-                                    <ViewOffIcon></ViewOffIcon>
-                                )
-                            }
-                            colorScheme="blue"
-                            onClick={handleViewHash}
-                        >
-                            {isViewHash ? 'hidden' : 'View'} hash
-                        </Button>
-                        <Button
-                            leftIcon={<LinkIcon></LinkIcon>}
-                            onClick={() =>
-                                downloadFile(
-                                    `http://127.0.0.1:8080/ipfs/${hash}`,
-                                )
-                            }
-                        >
-                            Open file
-                        </Button>
-                    </ButtonGroup>
-                </Box>
+                    {password === null || password === passwordText ? (
+                        <ButtonGroup variant="outline" spacing="2">
+                            <Button
+                                leftIcon={
+                                    !isViewHash ? (
+                                        <ViewIcon />
+                                    ) : (
+                                        <ViewOffIcon></ViewOffIcon>
+                                    )
+                                }
+                                colorScheme="blue"
+                                onClick={handleViewHash}
+                            >
+                                {isViewHash ? 'hidden' : 'View'} hash
+                            </Button>
+                            <Button
+                                leftIcon={<LinkIcon></LinkIcon>}
+                                onClick={() =>
+                                    downloadFile(
+                                        `http://127.0.0.1:8080/ipfs/${hash}`,
+                                    )
+                                }
+                            >
+                                Open file
+                            </Button>
+                        </ButtonGroup>
+                    ) : (
+                        ''
+                    )}
+                </Box>{' '}
+                {password !== null && password !== passwordText ? (
+                    <Box mt="2px">
+                        {' '}
+                        <Input
+                            value={passwordText}
+                            onChange={(e) => setPasswordText(e.target.value)}
+                            placeholder="Password"
+                        ></Input>
+                    </Box>
+                ) : (
+                    ''
+                )}
                 <Box mt="2">
                     {isViewHash && <Code display={'inherit'}>{hash}</Code>}
                 </Box>

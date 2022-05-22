@@ -1,8 +1,8 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import { BiFile, BiUpload } from 'react-icons/bi';
-
+import { BiArrowBack, BiFile, BiUpload } from 'react-icons/bi';
+import { CardFolder } from './components/card-folder';
 import Dashboard from './dashboard';
 import { useQuery } from 'react-query';
 import {
@@ -23,7 +23,78 @@ import {
 import { CardFile } from './components/card-file';
 import { SearchIcon } from '@chakra-ui/icons';
 import { DrawerUpload } from './components/drawer-upload';
-
+const filter = [
+    {
+        name: 'Images',
+        imagePath: process.env.PUBLIC_URL + '/gallery.png',
+        group: [
+            'png',
+            'jpeg',
+            'gif',
+            'psd',
+            'jpg',
+            'avif',
+            'bmp',
+            'webp',
+            'svg',
+        ],
+    },
+    {
+        name: 'Documents',
+        imagePath: process.env.PUBLIC_URL + '/doc.png',
+        group: [
+            'pdf',
+            'docx',
+            'csv',
+            'doc',
+            'xls',
+            'xlsx',
+            'txt',
+            'ppt',
+            'pptx',
+        ],
+    },
+    {
+        name: 'Other',
+        imagePath: process.env.PUBLIC_URL + '/folder.png',
+        group: [
+            'bin',
+            'exe',
+            'aac',
+            'arc',
+            'iso',
+            'avi',
+            'bz',
+            'css',
+            'js',
+            'bz2',
+            'eot',
+            'epub',
+            'gz',
+            'htm',
+            'html',
+            'ico',
+            'jar',
+            'js',
+            'json',
+            'mp3',
+            'mp4',
+            'mpeg',
+            'php',
+            'rar',
+            'sh',
+            'swf',
+            'ts',
+            'wav',
+            'webm',
+            'xhtml',
+            'zip',
+            '3gp',
+            'md',
+            '7z',
+        ],
+    },
+];
 const fetchImage = async () => {
     const res = await fetch('http://localhost:3000/getfiles');
     return res.json();
@@ -33,6 +104,7 @@ function App() {
         'getfiles',
         fetchImage,
     );
+    const [files, setFiles] = useState([]);
     const [search, setSearch] = useState('');
     if (isLoading) {
         return <span>Loading...</span>;
@@ -41,6 +113,7 @@ function App() {
     if (isError) {
         return <span>Error</span>;
     }
+    //console.log(mime.extension('IMAGE/JPEG'));
     return (
         <Dashboard>
             <Suspense fallback={<>Loading</>}>
@@ -51,10 +124,50 @@ function App() {
                     ></SeacrhInput>
                     <DrawerUpload refetch={refetch}></DrawerUpload>
                 </InputGroup>
+
                 <List spacing={3}>
+                    {files.length !== 0 && (
+                        <Button
+                            colorScheme="linkedin"
+                            onClick={() => setFiles([])}
+                            leftIcon={<BiArrowBack />}
+                        >
+                            Back
+                        </Button>
+                    )}
+                    {files.length === 0 ? (
+                        <Box display={'flex'} gap="2">
+                            {data &&
+                                filter.map((dataa, index) => (
+                                    <CardFolder
+                                        key={index}
+                                        onOpen={() =>
+                                            setFiles(
+                                                data.filter((item: any) =>
+                                                    dataa.group.includes(
+                                                        item.mimetype,
+                                                    ),
+                                                ),
+                                            )
+                                        }
+                                        count={
+                                            data.filter((item: any) =>
+                                                dataa.group.includes(
+                                                    item.mimetype,
+                                                ),
+                                            ).length
+                                        }
+                                        imagePath={dataa.imagePath}
+                                        name={dataa.name}
+                                    ></CardFolder>
+                                ))}
+                        </Box>
+                    ) : (
+                        ''
+                    )}
                     <Wrap spacing="30px">
                         {data &&
-                            data
+                            (files.length === 0 && search ? data : files)
                                 .filter((data: { fileName: string }) =>
                                     data.fileName
                                         .toLowerCase()
@@ -69,6 +182,7 @@ function App() {
                                     return (
                                         <WrapItem key={index}>
                                             <CardFile
+                                                password={data.password}
                                                 name={data.name}
                                                 fileName={data.fileName}
                                                 hash={data.hash}
