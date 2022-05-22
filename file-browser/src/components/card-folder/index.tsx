@@ -31,10 +31,10 @@ export const CardFolder: React.FC<{
                         fontWeight="semibold"
                         letterSpacing="wide"
                         fontSize="xs"
-                        textTransform="uppercase"
+                        textTransform="lowercase"
                         ml="2"
                     >
-                        {count} &bull;
+                        {count} files
                     </Box>
                 </Box>
 
