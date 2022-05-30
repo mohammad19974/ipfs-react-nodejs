@@ -19,7 +19,7 @@ import React, { useState } from 'react';
 import { BiUpload } from 'react-icons/bi';
 import { useMutation } from 'react-query';
 
-export function DrawerUpload({ refetch }: any) {
+export function DrawerUpload({ refetch,data }: any) {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [password, setPassword] = useState('');
     const [isPassword, setIsPassword] = useState(false);
@@ -71,10 +71,23 @@ export function DrawerUpload({ refetch }: any) {
             // console.log(file[0]);
             // Update the formData object
             // formData.append('file', file[0]);
+     
+            const fileSameName= data.filter((item:{fileName:string})=>item.fileName===file[0].name)
+     
+       if(fileSameName.length===0) {
+
             mutate({
                 file: file[0],
                 password: isPassword ? password : undefined,
-            });
+            });}else{
+                toast({
+                    title: 'Upload failed',
+                    description: 'plz change name file and upload file agine',
+                    status: 'error',
+                    duration: 5000,
+                    isClosable: true,
+                });
+            }
         } else {
             alert('Please choose file');
         }

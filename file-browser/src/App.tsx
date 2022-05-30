@@ -23,6 +23,7 @@ import {
 import { CardFile } from './components/card-file';
 import { SearchIcon } from '@chakra-ui/icons';
 import { DrawerUpload } from './components/drawer-upload';
+import Login from './components/login';
 const filter = [
     {
         name: 'Images',
@@ -104,8 +105,12 @@ function App() {
         'getfiles',
         fetchImage,
     );
+    const [isLogin,setIsLogin]=useState(false)
     const [files, setFiles] = useState([]);
     const [search, setSearch] = useState('');
+    useEffect(()=>{
+        setIsLogin(localStorage.getItem("islogin")==="true"?true:false)
+    },[])
     if (isLoading) {
         return <span>Loading...</span>;
     }
@@ -113,88 +118,96 @@ function App() {
     if (isError) {
         return <span>Error</span>;
     }
-    //console.log(mime.extension('IMAGE/JPEG'));
-    return (
-        <Dashboard>
-            <Suspense fallback={<>Loading</>}>
-                <InputGroup mr="12px">
-                    <SeacrhInput
-                        onChange={setSearch}
-                        value={search}
-                    ></SeacrhInput>
-                    <DrawerUpload refetch={refetch}></DrawerUpload>
-                </InputGroup>
+    const logout=()=>{
+        setIsLogin(false)
+        localStorage.removeItem("islogin")
+    }
 
-                <List spacing={3}>
-                    {files.length !== 0 && (
-                        <Button
-                            colorScheme="linkedin"
-                            onClick={() => setFiles([])}
-                            leftIcon={<BiArrowBack />}
-                        >
-                            Back
-                        </Button>
-                    )}
-                    {files.length === 0 ? (
-                        <Box display={'flex'} gap="2">
-                            {data &&
-                                filter.map((dataa, index) => (
-                                    <CardFolder
-                                        key={index}
-                                        onOpen={() =>
-                                            setFiles(
+    return (
+        <Dashboard isLogin={isLogin} logout={logout}>
+            {isLogin===true ? (
+                <Suspense fallback={<>Loading</>}>
+                    <InputGroup mr="12px">
+                        <SeacrhInput
+                            onChange={setSearch}
+                            value={search}
+                        ></SeacrhInput>
+                        <DrawerUpload data={data} refetch={refetch}></DrawerUpload>
+                    </InputGroup>
+
+                    <List spacing={3}>
+                        {files.length !== 0 && (
+                            <Button
+                                colorScheme="linkedin"
+                                onClick={() => setFiles([])}
+                                leftIcon={<BiArrowBack />}
+                            >
+                                Back
+                            </Button>
+                        )}
+                        {files.length === 0 ? (
+                            <Box display={'flex'} gap="2">
+                                {data &&
+                                    filter.map((dataa, index) => (
+                                        <CardFolder
+                                            key={index}
+                                            onOpen={() =>
+                                                setFiles(
+                                                    data.filter((item: any) =>
+                                                        dataa.group.includes(
+                                                            item.mimetype,
+                                                        ),
+                                                    ),
+                                                )
+                                            }
+                                            count={
                                                 data.filter((item: any) =>
                                                     dataa.group.includes(
                                                         item.mimetype,
                                                     ),
+                                                ).length
+                                            }
+                                            imagePath={dataa.imagePath}
+                                            name={dataa.name}
+                                        ></CardFolder>
+                                    ))}
+                            </Box>
+                        ) : (
+                            ''
+                        )}
+                        <Wrap spacing="30px">
+                            {data &&
+                                (files.length === 0 && search ? data : files)
+                                    .filter((data: { fileName: string }) =>
+                                        data.fileName
+                                            .toLowerCase()
+                                            .match(
+                                                new RegExp(
+                                                    search.toLowerCase(),
+                                                    'g',
                                                 ),
-                                            )
-                                        }
-                                        count={
-                                            data.filter((item: any) =>
-                                                dataa.group.includes(
-                                                    item.mimetype,
-                                                ),
-                                            ).length
-                                        }
-                                        imagePath={dataa.imagePath}
-                                        name={dataa.name}
-                                    ></CardFolder>
-                                ))}
-                        </Box>
-                    ) : (
-                        ''
-                    )}
-                    <Wrap spacing="30px">
-                        {data &&
-                            (files.length === 0 && search ? data : files)
-                                .filter((data: { fileName: string }) =>
-                                    data.fileName
-                                        .toLowerCase()
-                                        .match(
-                                            new RegExp(
-                                                search.toLowerCase(),
-                                                'g',
                                             ),
-                                        ),
-                                )
-                                .map((data: any, index: number) => {
-                                    return (
-                                        <WrapItem key={index}>
-                                            <CardFile
-                                                password={data.password}
-                                                name={data.name}
-                                                fileName={data.fileName}
-                                                hash={data.hash}
-                                                size={data.size}
-                                                mimetype={data.mimetype}
-                                            ></CardFile>
-                                        </WrapItem>
-                                    );
-                                })}
-                    </Wrap>
-                </List>
-            </Suspense>
+                                    )
+                                    .map((data: any, index: number) => {
+                                        return (
+                                            <WrapItem key={index}>
+                                                <CardFile
+                                                    password={data.password}
+                                                    name={data.name}
+                                                    fileName={data.fileName}
+                                                    hash={data.hash}
+                                                    size={data.size}
+                                                    mimetype={data.mimetype}
+                                                ></CardFile>
+                                            </WrapItem>
+                                        );
+                                    })}
+                        </Wrap>
+                    </List>
+                </Suspense>
+            ) : (
+                <Login setIsLogin={setIsLogin}></Login>
+            )}
         </Dashboard>
     );
 }

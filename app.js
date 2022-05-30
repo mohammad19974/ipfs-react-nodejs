@@ -15,27 +15,38 @@ var mime = require('mime-types');
 app.use(cors({ origin: '*' }));
 
 const ipfs = ipfsAPI('/ip4/127.0.0.1/tcp/5001'); //http => POST: SEND TO DATA IN THE REQUEST , GET =>FETCH TO DATA USED REQUEST,DELETE:,PUT update
-app.get('/', async function (req, res) {
+app.get('/', async function(req, res) {
     // use `console.dir` to print nested objects
 
     // res.json({allUsers});
     //   res.send('Hello World')
     res.sendFile(__dirname + '/public/index.html');
 });
-app.get('/getfiles', async function (req, res) {
+app.get('/getfiles', async function(req, res) {
     const allFile = await prisma.files.findMany();
 
     const dataF = allFile.map((data) => {
-        return { ...data, mimetype: mime.extension(data.mimetype) };
+        return {...data, mimetype: mime.extension(data.mimetype) };
     });
     res.json(dataF);
 });
-app.post('/profile', upload.single('avatar'), function (req, res, next) {
+
+app.get('/login/:username/:password',async function(req, res) {
+
+  const user = await prisma.users.findMany({where:{username:req.params.username,password:req.params.password}});
+
+if(user.length>0)
+res.json({isLogin:true})
+else{
+res.json({isLogin:false})
+}
+});
+app.post('/profile', upload.single('avatar'), function(req, res, next) {
     // req.file is the `avatar` file
     // req.body will hold the text fields, if there were any
     var data = Buffer.from(fs.readFileSync(req.file.path));
     try {
-        ipfs.add(data, async function (err, file) {
+        ipfs.add(data, async function(err, file) {
             if (err) {
                 console.log(err);
                 return;
@@ -57,11 +68,11 @@ app.post('/profile', upload.single('avatar'), function (req, res, next) {
     }
 });
 
-app.post('/upload', upload.single('file'), async function (req, res) {
+app.post('/upload', upload.single('file'), async function(req, res) {
     try {
         var data = Buffer.from(fs.readFileSync(req.file?.path));
 
-        ipfs.add(data, async function (err, file) {
+        ipfs.add(data, async function(err, file) {
             if (err) {
                 res.json(err);
                 console.log(err);
@@ -73,7 +84,7 @@ app.post('/upload', upload.single('file'), async function (req, res) {
                 data: {
                     hash: file[0].hash,
                     name: '',
-                    password: req?.body?.password ?? null,
+                    password: req.body?.password??null,
                     fileName: req.file.originalname,
                     mimetype: req.file.mimetype,
                     size: file[0].size,
@@ -86,7 +97,7 @@ app.post('/upload', upload.single('file'), async function (req, res) {
         console.log('error ' + e);
     }
 });
-app.get('/download/:ID', function (req, res) {
+app.get('/download/:ID', function(req, res) {
     console.log(req.params.ID);
     res.redirect('http://127.0.0.1:8080/ipfs/' + req.params.ID);
 });

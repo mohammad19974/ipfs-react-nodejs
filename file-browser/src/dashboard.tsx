@@ -36,17 +36,21 @@ interface LinkItemProps {
 }
 const LinkItems: Array<LinkItemProps> = [
     { name: 'Home', icon: FiHome },
+    { name: 'Logout', icon: FiSettings },
+
     //   { name: 'Trending', icon: FiTrendingUp },
     //   { name: 'Explore', icon: FiCompass },
     //   { name: 'Favourites', icon: FiStar },
     //   { name: 'Settings', icon: FiSettings },
 ];
 
-export default function Dashboard({ children }: { children: ReactNode }) {
+export default function Dashboard({ children,isLogin,logout }: { children: ReactNode ,isLogin:boolean,logout:Function}) {
     const { isOpen, onOpen, onClose } = useDisclosure();
     return (
         <Box minH="100vh" bg={useColorModeValue('gray.100', 'gray.900')}>
             <SidebarContent
+            logout={logout}
+            isLogin={isLogin}
                 onClose={() => onClose}
                 display={{ base: 'none', md: 'block' }}
             />
@@ -60,7 +64,7 @@ export default function Dashboard({ children }: { children: ReactNode }) {
                 size="full"
             >
                 <DrawerContent>
-                    <SidebarContent onClose={onClose} />
+                    <SidebarContent   logout={logout} isLogin={isLogin} onClose={onClose} />
                 </DrawerContent>
             </Drawer>
             {/* mobilenav */}
@@ -75,9 +79,11 @@ export default function Dashboard({ children }: { children: ReactNode }) {
 
 interface SidebarProps extends BoxProps {
     onClose: () => void;
+    isLogin:boolean
+    logout:Function
 }
 
-const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
+const SidebarContent = ({ onClose,isLogin,logout, ...rest }: SidebarProps) => {
     return (
         <Box
             bg={useColorModeValue('white', 'gray.900')}
@@ -103,11 +109,19 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
                     onClick={onClose}
                 />
             </Flex>
-            {LinkItems.map((link) => (
-                <NavItem bg={'facebook.200'} key={link.name} icon={link.icon}>
+            {isLogin&&LinkItems.map((link,index) => (
+                <NavItem className='mt-4' mb="14px" bg={index===0?'facebook.100':"facebook.0"} onClick={()=>index===1&&logout()} key={link.name} icon={link.icon}>
                     {link.name}
                 </NavItem>
             ))}
+                {!isLogin&&LinkItems.map((link,index) => (
+             
+             index===0&&   <NavItem bg={'facebook.200'} key={link.name} icon={link.icon}>
+                    {"Login"}
+                </NavItem>
+            ))}
+              
+            
         </Box>
     );
 };
